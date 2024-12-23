@@ -28,7 +28,7 @@ maxb = 12
 sfac = 1  # spread factor
 
 ringz.set()
-cont = not True
+cont = True
 
 while cont:
     for ring in range(ringtotal - 1, -1, -1):
@@ -53,9 +53,9 @@ while cont:
     end = ticks_ms() + 3000
     while ticks_ms() < end:
         ring = randint(0,ringtotal - 1)
-        r = max(minb,min(maxb, ringz.rings[ring][0][1] + randint(-sfac,sfac)))
-        g = max(minb,min(maxb, ringz.rings[ring][0][2] + randint(-sfac,sfac)))
-        b = max(minb,min(maxb, ringz.rings[ring][0][3] + randint(-sfac,sfac)))
+        r = max(minb,min(maxb, ringz.rings[ring][0][1][0] + randint(-sfac,sfac)))
+        g = max(minb,min(maxb, ringz.rings[ring][0][1][1] + randint(-sfac,sfac)))
+        b = max(minb,min(maxb, ringz.rings[ring][0][1][2] + randint(-sfac,sfac)))
         ringz.set(ring,(r,g,b))
 
 
@@ -79,9 +79,9 @@ while cont:
         sleep_ms(100)
 
     for ring in range(ringtotal - 1, -1, -1):
-        r = ringz.rings[ring][0][1]
-        g = ringz.rings[ring][0][2]
-        b = ringz.rings[ring][0][3]
+        r = ringz.rings[ring][0][1][0]
+        g = ringz.rings[ring][0][1][1]
+        b = ringz.rings[ring][0][1][2]
         for step in range(max(r, g, b)):
             r = max(0, r - 1)
             g = max(0, g - 1)

@@ -4,7 +4,8 @@ from gc import collect
 from json import dumps, loads
 
 class PixRing():
-    def __init__(self,pixels,ringmap):
+    def __init__(self,pixels,ringmap,limit=255):
+        self.limit = limit
         self._np = pixels
         self.rings = []
         n = 0
