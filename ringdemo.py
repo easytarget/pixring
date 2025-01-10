@@ -6,10 +6,10 @@ from random import randint
 
 '''
     demo
-    
+
     Important:
     Adjust the Pin Information below to match your wiring
-    
+
 '''
 
 #pix_pin = Pin(26)
@@ -31,6 +31,7 @@ ringz.set()
 cont = True
 
 while cont:
+    # fadeup
     for ring in range(ringtotal - 1, -1, -1):
         r = g = b = 0
         rmax = randint(1,maxb)
@@ -45,11 +46,13 @@ while cont:
 
     sleep_ms(100)
 
+    # Random ring colors
     end = ticks_ms() + 3000
     while ticks_ms() < end:
         ringz.set(randint(0,ringtotal - 1),(randint(minb,maxb),randint(minb,maxb),randint(minb,maxb)))
         sleep_ms(randint(0,100))
 
+    # random color movements
     end = ticks_ms() + 3000
     while ticks_ms() < end:
         ring = randint(0,ringtotal - 1)
@@ -58,13 +61,17 @@ while cont:
         b = max(minb,min(maxb, ringz.rings[ring][0][1][2] + randint(-sfac,sfac)))
         ringz.set(ring,(r,g,b))
 
+    # Cler
+    ringz.set()
 
-    end = ticks_ms() + 3000
+    # Random spokes
+    end = ticks_ms() + 1500
     while ticks_ms() < end:
-        ringz.rand(randint(0,ringtotal - 1), min=minb, max=maxb)
-        sleep_ms(randint(0,100))
-    ringz.rand(min=minb, max=maxb)
+        angle  = randint(0,359)
+        ringz.pos(rgb=(randint(minb,maxb),randint(minb,maxb),randint(minb,maxb)),pos=angle,units='degrees')
+        sleep_ms(50)
 
+    # rotate all clockwise
     a = 0
     end = ticks_ms() + 3000
     while ticks_ms() < end:
@@ -72,12 +79,38 @@ while cont:
         ringz.rot()
         sleep_ms(100)
 
+    # rotate all anti clockwise
+    a = 0
     end = ticks_ms() + 3000
     while ticks_ms() < end:
         a = (a + 1) % ringtotal
         ringz.rot(fwd=False)
         sleep_ms(100)
 
+    # random rings
+    end = ticks_ms() + 3000
+    while ticks_ms() < end:
+        ringz.rand(randint(0,ringtotal - 1), min=minb, max=maxb)
+        sleep_ms(randint(0,100))
+    ringz.rand(min=minb, max=maxb)
+
+    # rotate all clockwise
+    a = 0
+    end = ticks_ms() + 3000
+    while ticks_ms() < end:
+        a = (a + 1) % ringtotal
+        ringz.rot()
+        sleep_ms(100)
+
+    # rotate all anti clockwise
+    a = 0
+    end = ticks_ms() + 3000
+    while ticks_ms() < end:
+        a = (a + 1) % ringtotal
+        ringz.rot(fwd=False)
+        sleep_ms(100)
+
+    # fadeout
     for ring in range(ringtotal - 1, -1, -1):
         r = ringz.rings[ring][0][1][0]
         g = ringz.rings[ring][0][1][1]
@@ -89,7 +122,7 @@ while cont:
             ringz.set(ring,(r, g, b))
             sleep_ms(int(50 / sfac))
 
-    #cont = False    # exit
+    cont = False    # exit
 
 print('Fin')
 ringz.set()
