@@ -24,8 +24,9 @@ ringz = PixRing(np,ringlist)
 
 # limits and spread
 minb = 1
-maxb = 12
+maxb = 16
 sfac = 1  # spread factor
+steptime = 6000
 
 ringz.set()
 cont = True
@@ -52,20 +53,23 @@ while cont:
         ringz.set(randint(0,ringtotal - 1),(randint(minb,maxb),randint(minb,maxb),randint(minb,maxb)))
         sleep_ms(randint(0,100))
 
-    # random color movements
-    end = ticks_ms() + 3000
+    # random color changes
+    end = ticks_ms() + steptime
     while ticks_ms() < end:
         ring = randint(0,ringtotal - 1)
-        r = max(minb,min(maxb, ringz.rings[ring][0][1][0] + randint(-sfac,sfac)))
-        g = max(minb,min(maxb, ringz.rings[ring][0][1][1] + randint(-sfac,sfac)))
-        b = max(minb,min(maxb, ringz.rings[ring][0][1][2] + randint(-sfac,sfac)))
-        ringz.set(ring,(r,g,b))
+        r = randint(minb,maxb)
+        g = randint(minb,maxb)
+        b = randint(minb,maxb)
+        #r = max(minb,min(maxb, ringz.rings[ring][0][1][0] + randint(-sfac,sfac)))
+        #g = max(minb,min(maxb, ringz.rings[ring][0][1][1] + randint(-sfac,sfac)))
+        #b = max(minb,min(maxb, ringz.rings[ring][0][1][2] + randint(-sfac,sfac)))
+        ringz.pos(ring,(r,g,b),pos=randint(0,359),units='degrees')
 
     # Cler
-    ringz.set()
+    #ringz.set()
 
     # Random spokes
-    end = ticks_ms() + 1500
+    end = ticks_ms() + steptime
     while ticks_ms() < end:
         angle  = randint(0,359)
         ringz.pos(rgb=(randint(minb,maxb),randint(minb,maxb),randint(minb,maxb)),pos=angle,units='degrees')
@@ -73,38 +77,22 @@ while cont:
 
     # rotate all clockwise
     a = 0
-    end = ticks_ms() + 3000
+    end = ticks_ms() + steptime
     while ticks_ms() < end:
         a = (a + 1) % ringtotal
         ringz.rot()
         sleep_ms(100)
 
-    # rotate all anti clockwise
-    a = 0
-    end = ticks_ms() + 3000
-    while ticks_ms() < end:
-        a = (a + 1) % ringtotal
-        ringz.rot(fwd=False)
-        sleep_ms(100)
-
     # random rings
-    end = ticks_ms() + 3000
+    end = ticks_ms() + steptime
     while ticks_ms() < end:
         ringz.rand(randint(0,ringtotal - 1), min=minb, max=maxb)
         sleep_ms(randint(0,100))
     ringz.rand(min=minb, max=maxb)
 
-    # rotate all clockwise
-    a = 0
-    end = ticks_ms() + 3000
-    while ticks_ms() < end:
-        a = (a + 1) % ringtotal
-        ringz.rot()
-        sleep_ms(100)
-
     # rotate all anti clockwise
     a = 0
-    end = ticks_ms() + 3000
+    end = ticks_ms() + steptime
     while ticks_ms() < end:
         a = (a + 1) % ringtotal
         ringz.rot(fwd=False)
@@ -122,7 +110,7 @@ while cont:
             ringz.set(ring,(r, g, b))
             sleep_ms(int(50 / sfac))
 
-    cont = False    # exit
+    #cont = False    # exit
 
 print('Fin')
 ringz.set()
