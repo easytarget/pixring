@@ -1,18 +1,34 @@
+'''
+todo
+
+Library:
+ringlist == -1 for all rings (not None)
+provide: pixrings.ALL = -1
+
+Stop keeping a seperate value array.. ??
+
+Colorwheel.. use maps for speed..
+
+demo:
+'Roll out a colorin a circular way.. (use to 'blank)'
+'''
+
+
 from pixrings import PixRing
 from machine import Pin
 from neopixel import NeoPixel
 from time import sleep_ms, ticks_ms
 from random import randint
+from sys import exit
 
 '''
     demo
 
     Important:
-    Adjust the Pin Information below to match your wiring
+    Adjust the Pin and Ring Information below to match your setup!
 
 '''
 
-#pix_pin = Pin(26)
 pix_pin = Pin(3)
 num_pix = 124
 np = NeoPixel(pix_pin, num_pix)
@@ -21,6 +37,7 @@ np = NeoPixel(pix_pin, num_pix)
 ringlist = [45,35,24,12,8]
 ringtotal = len(ringlist)
 ringz = PixRing(np,ringlist)
+ringz.set()
 
 # limits and spread
 minb = 1
@@ -28,8 +45,9 @@ maxb = 16
 sfac = 1  # spread factor
 steptime = 6000
 
-ringz.set()
 cont = True
+wheel = ringz.colorwheel(180,saturation=1,peak=maxb)
+
 
 while cont:
     # fadeup
@@ -65,8 +83,29 @@ while cont:
         #b = max(minb,min(maxb, ringz.rings[ring][0][1][2] + randint(-sfac,sfac)))
         ringz.pos(ring,(r,g,b),pos=randint(0,359),units='degrees')
 
-    # Cler
-    #ringz.set()
+    # Clear: raw wipe demo
+    # This bypasses the ringz methods, and writes to the pixels directly
+    for a in range(num_pix):
+        ringz._np[a] = (0,0,0)
+        ringz._np.write()
+        sleep_ms(5)
+
+    # Build colorwheels from inside out then..
+    # Colorwheels
+    end = ticks_ms() + steptime
+    while ticks_ms() < end:
+        for a in range(len(wheel)):
+            n = 0
+            for r in range(len(ringlist)):
+                for p in range(ringlist[r]):
+                    ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)+a) % len(wheel)]
+                    n = n + 1
+                ringz._np.write()
+
+    # Sweep clean
+    for a in range(max(ringlist)*2):
+        ringz.pos(None,(0,0,0),pos=a/(max(ringlist)*2),units='decimal')
+        sleep_ms(2)
 
     # Random spokes
     end = ticks_ms() + steptime

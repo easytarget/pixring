@@ -2,20 +2,38 @@ from random import randint
 from math import pi
 from gc import collect
 from json import dumps, loads
+#from gc import collect
 
 class PixRing():
-    def __init__(self,neopixels,ringmap,limit=[255,255,255]):
-        self._limit = limit
+    '''
+    Cerates a NeoPixel Ring object
+
+    Required:
+        neopixels = a neopixel.NeoPixel() object
+        ringmap   = a [list] giving the number of pixels in each ring
+    Optional:
+        limit     = default: 255
+                    an int() or (tuple) specifiying a 'hard' maximum RGB
+                    value that can be set for any pixel
+        start     = default: 0
+                    Index of the first pixel of the rings, if integer the rings
+                    are assumed to follow each other; or a list can be supplied
+                    giving the index number of the first pixel in each ring.
+    '''
+
+    ALL = None
+
+    def __init__(self,neopixels,ringmap,limit=255,start=0):
+        self._limit = self._rgbTuple(limit)
         self._np = neopixels
         self.rings = []
-        n = 0
+        n = start if type(start) is int else -1
         for r in range(len(ringmap)):
             self.rings.append([])
+            n = n if type(start) is int else start[r]
             for p in range(ringmap[r]):
                 self.rings[r].append([n,(0,0,0)])
                 n += 1
-        if n != self._np.n:
-            self._pp('warning: pixel count missmatch')
 
     def _pp(self, text):
         print(text)
@@ -51,6 +69,28 @@ class PixRing():
             return float(pos / (2 * pi))
         # we have a problem Jim.
         return -1
+
+    def colorwheel(self,points=360,saturation=1,peak=255):
+            # returns a colrwheel map object
+        def hsv_to_rgb( h:scalar, s:scalar, v:scalar) -> tuple:
+            if h == 1.0: h = 0.0
+            i = int(h*6.0)
+            f = h*6.0 - i
+            w = int(v*( 1.0 - s) )
+            q = int(v*( ( 1.0 - s * f) ) )
+            t = int(v*( ( 1.0 - s * ( 1.0 - f ) ) ) )
+            v = int(v)
+            if i==0: return(v, t, w)
+            if i==1: return(q, v, w)
+            if i==2: return(w, v, t)
+            if i==3: return(w, q, v)
+            if i==4: return(t, w, v)
+            if i==5: return(v, w, q)
+
+        wheel = [[0,0,0]] * points
+        for point in range(points):
+            wheel[point] = hsv_to_rgb(point/points,saturation,peak)
+        return wheel
 
     def set(self, rings=None, rgb=(0,0,0)):
         rgb = self._rgbTuple(rgb)
@@ -118,9 +158,9 @@ class PixRing():
         for r in rings:
             for p in self.rings[r]:
                 rgb = (
-                    randint(rmin[0],rmax[0]),
-                    randint(rmin[1],rmax[1]),
-                    randint(rmin[2],rmax[2]),
+                    #randint(rmin[0],rmax[0]),
+                    #randint(rmin[1],rmax[1]),
+                    #randint(rmin[2],rmax[2]),
                     )
                 p[1] = self._setNp(p[0],rgb)
         self._np.write()
