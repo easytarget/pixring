@@ -20,7 +20,7 @@ class PixRing():
                     are assumed to follow each other; or a list can be supplied
                     giving the index number of the first pixel in each ring.
     '''
-
+    
     ALL = None
 
     def __init__(self,neopixels,ringmap,limit=255,start=0):
@@ -69,7 +69,7 @@ class PixRing():
             return float(pos / (2 * pi))
         # we have a problem Jim.
         return -1
-
+    
     def colorwheel(self,points=360,saturation=1,peak=255):
             # returns a colrwheel map object
         def hsv_to_rgb( h:scalar, s:scalar, v:scalar) -> tuple:

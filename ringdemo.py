@@ -90,6 +90,17 @@ while cont:
         ringz._np.write()
         sleep_ms(5)
 
+    # temp..
+    n = 0
+    for r in range(len(ringlist)):
+        for p in range(ringlist[r]):
+            ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)) % len(wheel)]
+            n = n + 1
+        ringz._np.write()
+        sleep_ms(200)
+        
+    sleep_ms(500)
+
     # Build colorwheels from inside out then..
     # Colorwheels
     end = ticks_ms() + steptime
@@ -100,12 +111,11 @@ while cont:
                 for p in range(ringlist[r]):
                     ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)+a) % len(wheel)]
                     n = n + 1
-                ringz._np.write()
-
-    # Sweep clean
+            ringz._np.write()
+    
+    # Fast sweep clean
     for a in range(max(ringlist)*2):
         ringz.pos(None,(0,0,0),pos=a/(max(ringlist)*2),units='decimal')
-        sleep_ms(2)
 
     # Random spokes
     end = ticks_ms() + steptime
