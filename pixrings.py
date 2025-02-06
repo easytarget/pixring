@@ -20,8 +20,8 @@ class PixRing():
                     are assumed to follow each other; or a list can be supplied
                     giving the index number of the first pixel in each ring.
     '''
-    
-    ALL = None
+
+    ALL = -1   # Denotes all rings when used as the rings= argument
 
     def __init__(self,neopixels,ringmap,limit=255,start=0):
         self._limit = self._rgbTuple(limit)
@@ -32,7 +32,7 @@ class PixRing():
             self.rings.append([])
             n = n if type(start) is int else start[r]
             for p in range(ringmap[r]):
-                self.rings[r].append([n,(0,0,0)])
+                self.rings[r].append(n)
                 n += 1
 
     def _pp(self, text):
@@ -46,20 +46,18 @@ class PixRing():
         return (r, g, b)
 
     def _ringList(self, rings):
-        rings = range(len(self.rings)) if rings is None else rings
+        rings = range(len(self.rings)) if rings == -1 else rings
         return [rings] if type(rings) is int else rings
 
-    def _setNp(self,pix,val):
-        # Set a pixel while applying limit & remember value
-        # returns the value written
+    def _setNp(self, pix, val):
+        # Set a pixel while applying limit
         newval = []
-        for i in range(len(val)):
+        for i in range(len(val)):  # hard limit each tuple entry
             newval.append(min(val[i],self._limit[i]))
         self._np[pix] = newval
-        return newval
 
     def _angleToDecimal(self, pos, units):
-        # convert inpot 'postion' to a decimal (0-1)
+        # convert input 'postion' to a float between 0 and 1
         # according to 'units', returns -1 on error
         if units[0:3] == 'deg':
             return float(pos / 360)
@@ -69,10 +67,11 @@ class PixRing():
             return float(pos / (2 * pi))
         # we have a problem Jim.
         return -1
-    
-    def colorwheel(self,points=360,saturation=1,peak=255):
-            # returns a colrwheel map object
+
+    def colorwheel(self, points=360, saturation=1, peak=255):
+            # returns a colorwheel map object
         def hsv_to_rgb( h:scalar, s:scalar, v:scalar) -> tuple:
+            # Crude; but fast, and effective enough for our purposes
             if h == 1.0: h = 0.0
             i = int(h*6.0)
             f = h*6.0 - i
@@ -86,23 +85,21 @@ class PixRing():
             if i==3: return(w, q, v)
             if i==4: return(t, w, v)
             if i==5: return(v, w, q)
-
         wheel = [[0,0,0]] * points
         for point in range(points):
             wheel[point] = hsv_to_rgb(point/points,saturation,peak)
         return wheel
 
-    def set(self, rings=None, rgb=(0,0,0)):
+    def fill(self, rings=-1, rgb=(0,0,0)):
         rgb = self._rgbTuple(rgb)
         rings = self._ringList(rings)
         for r in rings:
             for p in self.rings[r]:
-                p[1] = self._setNp(p[0],rgb)
+                self._setNp(p,rgb)
         self._np.write()
         collect()
 
-    def pos(self, rings=None, rgb=(0,0,0), pos=0.0, units='degrees', fill=False):
-        # WORK IN PROGRESS. SET TO CLOSEST (ANGULAR) PIXEL
+    def pos(self, rings=-1, rgb=(0,0,0), pos=0.0, units='degrees', fill=False):
         rgb = self._rgbTuple(rgb)
         rings = self._ringList(rings)
         pos = self._angleToDecimal(pos,units)
@@ -113,14 +110,11 @@ class PixRing():
         pos = round(float(max(0,min(1,pos))),3)
         for r in rings:
             rpos = int(len(self.rings[r]) * pos)
-            self.rings[r][rpos][1] = self._setNp(self.rings[r][rpos][0],rgb)
-            # TODO: add 'fill' function..
-            #for p in self.rings[r] # but only up to 'rpos'..
-            #    p[1] = self._setNp(p[0],rgb)
+            self._setNp(self.rings[r][rpos],rgb)
         self._np.write()
         collect()
 
-    def rand(self, rings=None, min=(0,0,0), max=(255,255,255)):
+    def rand(self, rings=-1, min=(0,0,0), max=(255,255,255)):
         rmin = self._rgbTuple(min)
         rmax = self._rgbTuple(max)
         rings = self._ringList(rings)
@@ -131,50 +125,54 @@ class PixRing():
                     randint(rmin[1],rmax[1]),
                     randint(rmin[2],rmax[2]),
                     )
-                p[1] = self._setNp(p[0],rgb)
+                self._setNp(p,rgb)
         self._np.write()
         collect()
 
-    def rot(self, rings=None, fwd=True):
+    def rot(self, rings=-1, fwd=True):
         rings = self._ringList(rings)
         for r in rings:
-            # record old data
+            # record current data        <========================= FIXME
             o = []
-            for i in self.rings[r]:
-                o.append(i[1])
+            for p in self.rings[r]:
+                o.append(self._np[p])
+            # shift forwards or back as appropriate
             o = o[-1:] + o[:-1] if fwd else o[1:] + o[:1]
             for p in range(len(self.rings[r])):
-                #print(p,self.rings[r][p][1],p[0],o[p])
-                self.rings[r][p][1]  = self._setNp(self.rings[r][p][0],o[p])
-                #was..
-                #self._np[self.rings[r][p][0]] = o[p]
-                #self.rings[r][p][1] = o[p]
+                self._setNp(self.rings[r][p],o[p])
         self._np.write()
         collect()
 
-    def wheel(self, rings=None, pos=0, units='degrees'):
+    def blit(self, rings=-1, colormap=None, pos=0, units='degrees'):
         rings = self._ringList(rings)
         pos = self._angleToDecimal(pos,units)
         for r in rings:
             for p in self.rings[r]:
                 rgb = (
                     #randint(rmin[0],rmax[0]),
-                    #randint(rmin[1],rmax[1]),
+                    #randint(rmin[1],rmax[1]),   FIX HERE!!!!!
                     #randint(rmin[2],rmax[2]),
                     )
-                p[1] = self._setNp(p[0],rgb)
+                self._setNp(p,rgb)
         self._np.write()
         collect()
 
     def save(self):
         # Helper: dump the whole status.
-        return dumps(self.rings)
+        out = []
+        for r in self.rings:
+            ring = []
+            for p in r:
+                ring.append((p, self._np[p]))
+            out.append(ring)
+        return dumps(out)
 
-    def load(self, json):
+    def load(self, json):                    # FIX: load values....
         # Helper: load whole status, apply the limit
-        self.rings = loads(json)
-        for p in self.rings:
-            p[1] = self._setNp(p[0],p[1])
+        indata = loads(json)
+        for r in indata:
+            for p in r:
+                self._setNp(p[0],p[1])
         self._np.write()
         collect()
 
