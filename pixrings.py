@@ -46,7 +46,7 @@ class PixRing():
         return (r, g, b)
 
     def _ringList(self, rings):
-        rings = range(len(self.rings)) if rings == -1 else rings
+        rings = list(range(len(self.rings))) if rings == -1 else rings
         return [rings] if type(rings) is int else rings
 
     def _setNp(self, pix, val):
@@ -132,8 +132,7 @@ class PixRing():
     def rot(self, rings=-1, fwd=True):
         rings = self._ringList(rings)
         for r in rings:
-            # record current data        <========================= FIXME
-            o = []
+            o = []  # record current values
             for p in self.rings[r]:
                 o.append(self._np[p])
             # shift forwards or back as appropriate
@@ -143,17 +142,17 @@ class PixRing():
         self._np.write()
         collect()
 
-    def blit(self, rings=-1, colormap=None, pos=0, units='degrees'):
+    def apply(self, rings=-1, colormap=None, pos=0, units='degrees'):
         rings = self._ringList(rings)
         pos = self._angleToDecimal(pos,units)
+        colorcount = len(colormap)
+        offset = int(pos * colorcount)
         for r in rings:
-            for p in self.rings[r]:
-                rgb = (
-                    #randint(rmin[0],rmax[0]),
-                    #randint(rmin[1],rmax[1]),   FIX HERE!!!!!
-                    #randint(rmin[2],rmax[2]),
-                    )
-                self._setNp(p,rgb)
+            pixcount = len(self.rings[r])
+            ratio = colorcount / pixcount
+            for p in range(pixcount):
+                rgb = colormap[(int(ratio * p) + offset) % colorcount]
+                self._setNp(self.rings[r][p],rgb)
         self._np.write()
         collect()
 

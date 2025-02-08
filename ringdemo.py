@@ -75,14 +75,14 @@ while cont:
         ringz._np.write()
         sleep_ms(5)
 
-    # temp..
-    #n = 0
-    #for r in range(len(ringlist)):
-    #    for p in range(ringlist[r]):
-    #        ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)) % len(wheel)]
-    #        n = n + 1
-    #    ringz._np.write()
-    #    sleep_ms(200)
+    # temp.. bring colorwheels up one-by-one.
+    n = 0
+    for r in range(len(ringlist)):
+        for p in range(ringlist[r]):
+            ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)) % len(wheel)]
+            n = n + 1
+        ringz._np.write()
+        sleep_ms(200)
 
     sleep_ms(500)
 
@@ -90,13 +90,14 @@ while cont:
     # Colorwheels
     start = ticks_ms()
     while ticks_diff(ticks_ms(), start) < steptime:
-        for a in range(len(wheel)):
-            n = 0
-            for r in range(len(ringlist)):
-                for p in range(ringlist[r]):
-                    ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)+a) % len(wheel)]
-                    n = n + 1
-            ringz._np.write()
+        for a in range(0,360,4):
+            ringz.apply(rings=-1, colormap=wheel, pos=a, units='degrees')
+            #n = 0
+            #for r in range(len(ringlist)):
+            #    for p in range(ringlist[r]):
+            #        ringz._np[n]=wheel[(int((len(wheel)/ringlist[r])*p)+a) % len(wheel)]
+            #        n = n + 1
+            #ringz._np.write()
 
     # Fast sweep clean
     for a in range(max(ringlist)*2):
@@ -141,8 +142,7 @@ while cont:
             b = max(0, b - 1)
             ringz.fill(ring,(r, g, b))
             sleep_ms(int(50 / sfac))
-
-    #cont = False    # exit
+    cont = True    # exit
 
 print('Fin')
 ringz.fill()
